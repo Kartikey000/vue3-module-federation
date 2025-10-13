@@ -1,0 +1,21 @@
+{
+  "name": "vue3-module-federation",
+  "version": "1.0.0",
+  "description": "Vue 3 Module Federation with Shared Vuex Store - A complete micro-frontend architecture",
+  "author": "kartikey khateek",
+  "license": "ISC",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd host-app && npm install && cd ../list-user-app && npm install && cd ../create-user-app && npm install",
+    "dev:host": "cd host-app && npm run dev",
+    "dev:list": "cd list-user-app && npm run dev",
+    "dev:create": "cd create-user-app && npm run dev",
+    "build:all": "cd host-app && npm run build && cd ../list-user-app && npm run build && cd ../create-user-app && npm run build",
+    "type-check:all": "cd host-app && npm run type-check && cd ../list-user-app && npm run type-check && cd ../create-user-app && npm run type-check"
+  },
+  "workspaces": [
+    "host-app",
+    "list-user-app",
+    "create-user-app"
+  ]
+}
