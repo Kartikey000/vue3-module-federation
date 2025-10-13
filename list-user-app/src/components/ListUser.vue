@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import { addPageAction, trackComponentLoad, trackUserInteraction, noticeError } from '../utils/newrelic-helper'
 
 // Accept store as prop for federated mode, fallback to useStore for standalone
 interface Props {
@@ -74,15 +75,35 @@ const filteredUsers = computed(() => {
 })
 
 const editUser = (id: number) => {
+  // Track user interaction
+  trackUserInteraction('edit', 'user-card', { userId: id })
+  
   // This will be handled by the host app via routing
   window.location.href = `/users/edit/${id}`
 }
 
 const deleteUser = async (id: number) => {
   if (confirm('Are you sure you want to delete this user?')) {
+    const startTime = performance.now()
+    
     try {
       await store.dispatch('deleteUser', id)
+      
+      // Track successful deletion
+      const duration = performance.now() - startTime
+      addPageAction('userDeleted', {
+        userId: id,
+        success: true,
+        duration: Math.round(duration)
+      })
     } catch (err) {
+      // Track failed deletion
+      const duration = performance.now() - startTime
+      noticeError(err as Error, {
+        action: 'deleteUser',
+        userId: id,
+        duration: Math.round(duration)
+      })
       alert('Failed to delete user. Please try again.')
     }
   }
@@ -93,11 +114,23 @@ const refreshUsers = () => {
 }
 
 onMounted(() => {
+  const componentLoadStart = performance.now()
+  
   // Only fetch if users array is empty
   // This prevents resetting data when navigating back from edit
   if (users.value.length === 0) {
     store.dispatch('fetchUsers')
   }
+  
+  // Track component load time
+  const componentLoadTime = performance.now() - componentLoadStart
+  trackComponentLoad('ListUser', Math.round(componentLoadTime))
+  
+  // Set custom attributes
+  addPageAction('listUserViewed', {
+    userCount: users.value.length,
+    hasSearch: !!searchQuery.value
+  })
 })
 </script>
 

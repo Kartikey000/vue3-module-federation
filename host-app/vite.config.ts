@@ -85,6 +85,7 @@ export default defineConfig(({ mode }) => {
     cssCodeSplit: true,
     sourcemap: false, // Set to true for debugging production
     rollupOptions: {
+      external: ['@newrelic/browser-agent'],
       output: {
         manualChunks: undefined,
       },

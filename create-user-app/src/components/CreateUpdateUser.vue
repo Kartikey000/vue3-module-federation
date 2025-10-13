@@ -98,6 +98,7 @@
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { addPageAction, trackFormSubmission, trackUserInteraction, noticeError, trackComponentLoad } from '../utils/newrelic-helper'
 
 interface Props {
   userId?: string | number
@@ -249,9 +250,11 @@ const handleSubmit = async () => {
   if (!validateForm()) {
     return
   }
-  
+
   successMessage.value = ''
-  
+  const startTime = performance.now()
+  const formType = isEditMode.value ? 'update' : 'create'
+
   try {
     if (isEditMode.value && props.userId) {
       // Update existing user
@@ -265,7 +268,7 @@ const handleSubmit = async () => {
         department: formData.department,
         active: formData.active,
       })
-      
+
       successMessage.value = 'User updated successfully!'
     } else {
       // Create new user
@@ -277,10 +280,14 @@ const handleSubmit = async () => {
         department: formData.department,
         active: formData.active,
       })
-      
+
       successMessage.value = 'User created successfully!'
     }
-    
+
+    // Track successful form submission
+    const duration = performance.now() - startTime
+    trackFormSubmission(formType, true, Math.round(duration))
+
     setTimeout(() => {
       successMessage.value = ''
       if (!isEditMode.value) {
@@ -294,8 +301,17 @@ const handleSubmit = async () => {
         window.location.href = '/users'
       }
     }, 1500)
-    
+
   } catch (error) {
+    // Track failed form submission
+    const duration = performance.now() - startTime
+    trackFormSubmission(formType, false, Math.round(duration), (error as Error).message)
+    noticeError(error as Error, {
+      action: 'formSubmit',
+      formType,
+      userId: props.userId
+    })
+    
     console.error('Error saving user:', error)
     alert('An error occurred while saving the user. Please try again.')
   }
@@ -303,15 +319,33 @@ const handleSubmit = async () => {
 
 const handleCancel = () => {
   if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+    // Track cancel action
+    trackUserInteraction('cancel', 'form', {
+      formType: isEditMode.value ? 'update' : 'create',
+      hasChanges: !!(formData.name || formData.email)
+    })
+    
     window.history.back()
   }
 }
 
 onMounted(() => {
+  const componentLoadStart = performance.now()
+  
   if (props.userId) {
     isEditMode.value = true
     loadUser(props.userId)
   }
+  
+  // Track component load
+  const componentLoadTime = performance.now() - componentLoadStart
+  trackComponentLoad('CreateUpdateUser', Math.round(componentLoadTime))
+  
+  // Set custom attributes
+  addPageAction('createUpdateUserViewed', {
+    mode: isEditMode.value ? 'edit' : 'create',
+    userId: props.userId || null
+  })
 })
 </script>
 
