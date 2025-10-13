@@ -14,7 +14,7 @@ export const isNewRelicAvailable = (): boolean => {
  * @param attributes - Additional attributes to track
  */
 export const addPageAction = (actionName: string, attributes?: Record<string, any>) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.addPageAction(actionName, attributes)
     console.log(`[New Relic] Page Action: ${actionName}`, attributes)
   }
@@ -26,7 +26,7 @@ export const addPageAction = (actionName: string, attributes?: Record<string, an
  * @param value - Attribute value
  */
 export const setCustomAttribute = (name: string, value: string | number | boolean) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.setCustomAttribute(name, value)
     console.log(`[New Relic] Custom Attribute: ${name} = ${value}`)
   }
@@ -38,7 +38,7 @@ export const setCustomAttribute = (name: string, value: string | number | boolea
  * @param customAttributes - Additional context
  */
 export const noticeError = (error: Error | string, customAttributes?: Record<string, any>) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.noticeError(error, customAttributes)
     console.error('[New Relic] Error reported:', error, customAttributes)
   }
@@ -50,7 +50,7 @@ export const noticeError = (error: Error | string, customAttributes?: Record<str
  * @param loadTimeMs - Load time in milliseconds
  */
 export const trackComponentLoad = (componentName: string, loadTimeMs: number) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.addPageAction('componentLoaded', {
       component: componentName,
       loadTime: loadTimeMs,
@@ -68,7 +68,7 @@ export const trackUserInteraction = (
   target: string, 
   metadata?: Record<string, any>
 ) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.addPageAction('userInteraction', {
       action,
       target,
@@ -90,7 +90,7 @@ export const trackFormSubmission = (
   duration: number,
   errorMessage?: string
 ) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.addPageAction('formSubmission', {
       formType,
       success,
@@ -108,7 +108,7 @@ export const trackFormSubmission = (
  * @param status - HTTP status code
  */
 export const trackApiCall = (endpoint: string, duration: number, status: number) => {
-  if (isNewRelicAvailable()) {
+  if (isNewRelicAvailable() && window.newrelic) {
     window.newrelic.addPageAction('apiCall', {
       endpoint,
       duration,
