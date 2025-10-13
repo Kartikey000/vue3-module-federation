@@ -1,22 +1,20 @@
-// New Relic Browser Agent Configuration
-
-// Performance monitoring configuration for Module Federation
+// newrelic-config.ts
 export interface NewRelicConfig {
   licenseKey: string
   applicationID: string
   accountId?: string
   trustKey?: string
   agentID?: string
+  region?: 'us' | 'eu' // default: us
 }
 
 export async function initNewRelic(config: NewRelicConfig) {
   try {
-    // Dynamically import the New Relic Browser Agent
-    // @ts-ignore - Dynamic import handled at runtime
+    // Dynamic import ensures it's bundled correctly
     const { default: BrowserAgent } = await import('@newrelic/browser-agent')
-    
-    // Initialize New Relic Browser Agent with all features enabled
-    // Based on: https://docs.newrelic.com/docs/browser/browser-monitoring/
+
+    const beacon = config.region === 'eu' ? 'bam.eu01.nr-data.net' : 'bam.nr-data.net'
+
     const options = {
       init: {
         // Distributed Tracing: Track requests across your entire stack
@@ -99,40 +97,25 @@ export async function initNewRelic(config: NewRelicConfig) {
       },
       
       info: {
-        beacon: 'bam.nr-data.net',
-        errorBeacon: 'bam.nr-data.net',
+        beacon,
+        errorBeacon: beacon,
         licenseKey: config.licenseKey,
         applicationID: config.applicationID,
-        sa: 1
+        sa: 1,
       },
-      
       loader_config: {
         accountID: config.accountId || '',
         trustKey: config.trustKey || '',
         agentID: config.agentID || '',
         licenseKey: config.licenseKey,
-        applicationID: config.applicationID
-      }
+        applicationID: config.applicationID,
+      },
     }
 
-    // Create and start the agent
     new BrowserAgent(options)
-    
-    console.log('[New Relic] Browser agent initialized successfully with full monitoring')
-    console.log('[New Relic] Application ID:', config.applicationID)
-    console.log('[New Relic] Enabled Features:')
-    console.log('  ✓ Distributed Tracing')
-    console.log('  ✓ AJAX Monitoring')
-    console.log('  ✓ JavaScript Error Tracking')
-    console.log('  ✓ Core Web Vitals & Metrics')
-    console.log('  ✓ Session Replay (10% sampling)')
-    console.log('  ✓ Session Traces')
-    console.log('  ✓ SPA Monitoring')
-    console.log('  ✓ Page View Timing')
-    console.log('  ✓ Custom Page Actions')
-    console.log('  ✓ Soft Navigation Tracking')
+
+    console.log('[New Relic] Browser agent initialized ✅')
   } catch (error) {
     console.error('[New Relic] Failed to initialize:', error)
-    console.error('[New Relic] Make sure @newrelic/browser-agent is installed')
   }
 }

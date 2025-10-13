@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   // Get host URL from environment variables with fallback
-  const hostAppUrl = env.VITE_HOST_APP_URL || 'http://localhost:5000'
+  const hostAppUrl = env.HOST_APP_URL || 'http://localhost:5000'
 
   return {
     plugins: [
