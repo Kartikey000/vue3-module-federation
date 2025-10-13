@@ -11,8 +11,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   // Get remote URLs from environment variables with fallbacks
-  const listUserAppUrl = env.VITE_LIST_USER_APP_URL || 'http://localhost:5001'
-  const createUserAppUrl = env.VITE_CREATE_USER_APP_URL || 'http://localhost:5002'
+  const listUserAppUrl = env.LIST_USER_APP_URL || 'http://localhost:5001'
+  const createUserAppUrl = env.CREATE_USER_APP_URL || 'http://localhost:5002'
 
   return {
     plugins: [
