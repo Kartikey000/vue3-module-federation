@@ -1,5 +1,6 @@
 // New Relic Browser Agent Configuration
-import { BrowserAgent } from '@newrelic/browser-agent/loaders/browser-agent'
+// Import will be enabled when New Relic is properly set up
+// import { BrowserAgent } from '@newrelic/browser-agent/loaders/browser-agent'
 
 // Performance monitoring configuration for Module Federation
 export interface NewRelicConfig {
@@ -12,6 +13,11 @@ export interface NewRelicConfig {
 
 export function initNewRelic(config: NewRelicConfig) {
   // Initialize New Relic Browser Agent
+  // This function is a placeholder until New Relic is properly configured
+  console.log('[New Relic] Configuration ready:', config)
+  console.log('[New Relic] To enable, uncomment the BrowserAgent import and initialization')
+  
+  /* Uncomment when ready to use New Relic
   const options = {
     init: {
       distributed_tracing: { enabled: true },
@@ -36,6 +42,6 @@ export function initNewRelic(config: NewRelicConfig) {
 
   // Create and start the agent
   new BrowserAgent(options)
-
   console.log('[New Relic] Browser agent initialized')
+  */
 }

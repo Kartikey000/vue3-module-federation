@@ -1,4 +1,5 @@
-import { createStore, ActionContext } from 'vuex'
+import { createStore } from 'vuex'
+import type { ActionContext } from 'vuex'
 
 export interface User {
   id: number
@@ -31,71 +32,71 @@ export const store = createStore<RootState>({
   },
 
   getters: {
-    allUsers: (state) => state.users,
+    allUsers: (state: RootState) => state.users,
     
-    activeUsers: (state) => state.users.filter(user => user.active),
+    activeUsers: (state: RootState) => state.users.filter((user: User) => user.active),
     
-    inactiveUsers: (state) => state.users.filter(user => !user.active),
+    inactiveUsers: (state: RootState) => state.users.filter((user: User) => !user.active),
     
-    getUserById: (state) => (id: number) => {
-      return state.users.find(user => user.id === id)
+    getUserById: (state: RootState) => (id: number) => {
+      return state.users.find((user: User) => user.id === id)
     },
     
-    usersByRole: (state) => (role: string) => {
-      return state.users.filter(user => user.role === role)
+    usersByRole: (state: RootState) => (role: string) => {
+      return state.users.filter((user: User) => user.role === role)
     },
     
-    isLoading: (state) => state.loading,
+    isLoading: (state: RootState) => state.loading,
     
-    hasError: (state) => state.error !== null,
+    hasError: (state: RootState) => state.error !== null,
     
-    errorMessage: (state) => state.error,
+    errorMessage: (state: RootState) => state.error,
     
-    totalUsers: (state) => state.users.length,
+    totalUsers: (state: RootState) => state.users.length,
     
-    currentUser: (state) => state.currentUser,
+    currentUser: (state: RootState) => state.currentUser,
   },
 
   mutations: {
-    SET_USERS(state, users: User[]) {
+    SET_USERS(state: RootState, users: User[]) {
       state.users = users
     },
 
-    SET_LOADING(state, loading: boolean) {
+    SET_LOADING(state: RootState, loading: boolean) {
       state.loading = loading
     },
 
-    SET_ERROR(state, error: string | null) {
+    SET_ERROR(state: RootState, error: string | null) {
       state.error = error
     },
 
-    SET_CURRENT_USER(state, user: User | null) {
+    SET_CURRENT_USER(state: RootState, user: User | null) {
       state.currentUser = user
     },
 
-    ADD_USER(state, user: User) {
+    ADD_USER(state: RootState, user: User) {
       state.users.push(user)
     },
 
-    UPDATE_USER(state, updatedUser: User) {
-      const index = state.users.findIndex(user => user.id === updatedUser.id)
+    UPDATE_USER(state: RootState, updatedUser: User) {
+      const index = state.users.findIndex((user: User) => user.id === updatedUser.id)
       if (index !== -1) {
         state.users[index] = updatedUser
       }
     },
 
-    DELETE_USER(state, userId: number) {
-      state.users = state.users.filter(user => user.id !== userId)
+    DELETE_USER(state: RootState, userId: number) {
+      state.users = state.users.filter((user: User) => user.id !== userId)
     },
 
-    CLEAR_ERROR(state) {
+    CLEAR_ERROR(state: RootState) {
       state.error = null
     },
   },
 
   actions: {
     // Fetch all users
-    async fetchUsers({ commit }) {
+    async fetchUsers({ commit }: ActionContext<RootState, RootState>) {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       
@@ -167,7 +168,7 @@ export const store = createStore<RootState>({
     },
 
     // Fetch single user by ID
-    async fetchUserById({ commit, state }, userId: number) {
+    async fetchUserById({ commit, state }: ActionContext<RootState, RootState>, userId: number) {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       
@@ -175,7 +176,7 @@ export const store = createStore<RootState>({
         // Simulate API call
         await delay(300)
         
-        const user = state.users.find(u => u.id === userId)
+        const user = state.users.find((u: User) => u.id === userId)
         if (user) {
           commit('SET_CURRENT_USER', user)
         } else {
@@ -190,7 +191,7 @@ export const store = createStore<RootState>({
     },
 
     // Create new user
-    async createUser({ commit, state }, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
+    async createUser({ commit, state }: ActionContext<RootState, RootState>, userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       
@@ -200,7 +201,7 @@ export const store = createStore<RootState>({
         
         // Generate new ID
         const newId = state.users.length > 0 
-          ? Math.max(...state.users.map(u => u.id)) + 1 
+          ? Math.max(...state.users.map((u: User) => u.id)) + 1 
           : 1
         
         const newUser: User = {
@@ -222,7 +223,7 @@ export const store = createStore<RootState>({
     },
 
     // Update existing user
-    async updateUser({ commit }, userData: User) {
+    async updateUser({ commit }: ActionContext<RootState, RootState>, userData: User) {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       
