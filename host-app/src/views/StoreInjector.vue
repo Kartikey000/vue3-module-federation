@@ -4,13 +4,14 @@
 
 <script setup lang="ts">
 import { provide } from 'vue'
-import { useStore, Store } from 'vuex'
+import { useStore } from 'vuex'
+import type { Store } from 'vuex'
 
 // This component ensures the Vuex store is available to federated components
 const store = useStore()
 
 // Provide the store using both methods for maximum compatibility
 provide('vuex-store', store)
-provide(Store, store)
+provide<Store<any>>('store', store)
 </script>
 

@@ -32,7 +32,9 @@ export class PerformanceMonitor {
     try {
       performance.measure(measureName, startMark, endMark)
       const measure = performance.getEntriesByName(measureName)[0]
-      console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      if (measure && measure.duration !== undefined) {
+        console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
     }
@@ -58,7 +60,9 @@ export class PerformanceMonitor {
     try {
       performance.measure(measureName, startMark, endMark)
       const measure = performance.getEntriesByName(measureName)[0]
-      console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      if (measure && measure.duration !== undefined) {
+        console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
     }
@@ -85,7 +89,9 @@ export class PerformanceMonitor {
     try {
       performance.measure(measureName, startMark, endMark)
       const measure = performance.getEntriesByName(measureName)[0]
-      console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      if (measure && measure.duration !== undefined) {
+        console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`)
+      }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
     }

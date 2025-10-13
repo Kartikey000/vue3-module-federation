@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import { createStore, ActionContext } from 'vuex'
 
 export interface User {
   id: number
@@ -247,7 +247,7 @@ export const store = createStore<RootState>({
     },
 
     // Delete user
-    async deleteUser({ commit }, userId: number) {
+    async deleteUser({ commit }: ActionContext<RootState, RootState>, userId: number) {
       commit('SET_LOADING', true)
       commit('SET_ERROR', null)
       
@@ -266,12 +266,12 @@ export const store = createStore<RootState>({
     },
 
     // Clear current user
-    clearCurrentUser({ commit }) {
+    clearCurrentUser({ commit }: ActionContext<RootState, RootState>) {
       commit('SET_CURRENT_USER', null)
     },
 
     // Clear error
-    clearError({ commit }) {
+    clearError({ commit }: ActionContext<RootState, RootState>) {
       commit('CLEAR_ERROR')
     },
   },
