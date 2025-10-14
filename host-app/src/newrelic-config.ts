@@ -56,6 +56,19 @@ export function initNewRelic(config: NewRelicConfig) {
           enabled: true
         },
         
+        // Performance: Capture browser performance marks, measures, and resources
+        performance: {
+          capture_marks: true,      // Capture browser performance marks
+          capture_measures: true,    // Capture browser performance measures
+          capture_detail: true,      // Capture detailed performance metrics
+          resources: {
+            enabled: true,           // Capture browser performance resource timings
+            asset_types: [],         // Empty array collects all asset types (js, css, img, etc.)
+            first_party_domains: [], // Domains to mark as first-party resources
+            ignore_newrelic: true    // Ignore internal agent scripts and harvest calls
+          }
+        },
+        
         // Page Action: Track custom user interactions
         page_action: {
           enabled: true
