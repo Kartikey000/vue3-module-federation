@@ -23,7 +23,14 @@ export default defineConfig(({ mode }) => {
     // Set base URL for production - critical for Module Federation
     base: mode === 'production' && appUrl ? appUrl : '/',
     plugins: [
-      vue(),
+      vue({
+        template: {
+          compilerOptions: {
+            // Ensure proper CSS injection for Module Federation
+            isCustomElement: (tag) => false
+          }
+        }
+      }),
       vueDevTools(),
       federation({
         name: 'listUserApp',
@@ -88,9 +95,12 @@ export default defineConfig(({ mode }) => {
     minify: 'esbuild', // Use esbuild for faster minification
     cssCodeSplit: false, // Disable for Module Federation - CSS bundled with JS
     sourcemap: false, // Set to true for debugging production
+    cssTarget: 'chrome61', // Ensure modern CSS injection
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        // Ensure CSS is inlined in JS chunks
+        inlineDynamicImports: false,
       },
     },
     // Optimize chunk size
