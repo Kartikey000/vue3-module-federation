@@ -10,9 +10,12 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
   
+  // Helper function to normalize URL (remove trailing slash)
+  const normalizeUrl = (url: string) => url.replace(/\/$/, '')
+  
   // Get remote URLs from environment variables with fallbacks
-  const listUserAppUrl = env.LIST_USER_APP_URL || 'http://localhost:5001'
-  const createUserAppUrl = env.CREATE_USER_APP_URL || 'http://localhost:5002'
+  const listUserAppUrl = normalizeUrl(env.LIST_USER_APP_URL || 'http://localhost:5001')
+  const createUserAppUrl = normalizeUrl(env.CREATE_USER_APP_URL || 'http://localhost:5002')
 
   return {
     plugins: [
@@ -85,7 +88,7 @@ export default defineConfig(({ mode }) => {
     cssCodeSplit: true,
     sourcemap: false, // Set to true for debugging production
     rollupOptions: {
-      external: ['@newrelic/browser-agent'],
+      external: ['@newrelic/browser-agent/loaders/browser-agent'],
       output: {
         manualChunks: undefined,
       },

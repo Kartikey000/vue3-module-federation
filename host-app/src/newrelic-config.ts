@@ -11,7 +11,9 @@ export interface NewRelicConfig {
 export async function initNewRelic(config: NewRelicConfig) {
   try {
     // Dynamic import ensures it's bundled correctly
-    const { default: BrowserAgent } = await import('@newrelic/browser-agent')
+    // Using the specific loader path as per New Relic documentation
+    // @ts-expect-error - Dynamic import, module available at runtime
+    const { BrowserAgent } = await import('@newrelic/browser-agent/loaders/browser-agent')
 
     const beacon = config.region === 'eu' ? 'bam.eu01.nr-data.net' : 'bam.nr-data.net'
 
@@ -112,6 +114,7 @@ export async function initNewRelic(config: NewRelicConfig) {
       },
     }
 
+    // The agent loader code executes immediately on instantiation
     new BrowserAgent(options)
 
     console.log('[New Relic] Browser agent initialized ✅')
