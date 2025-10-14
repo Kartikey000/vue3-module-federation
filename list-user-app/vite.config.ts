@@ -78,7 +78,7 @@ export default defineConfig(({ mode }) => {
     outDir: 'dist',
     assetsDir: 'assets',
     minify: 'esbuild', // Use esbuild for faster minification
-    cssCodeSplit: true,
+    cssCodeSplit: false, // Disable for Module Federation - CSS bundled with JS
     sourcemap: false, // Set to true for debugging production
     rollupOptions: {
       output: {
@@ -87,7 +87,7 @@ export default defineConfig(({ mode }) => {
     },
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
-    // Enable CSS code splitting
+    // Enable CSS minification
     cssMinify: true,
   },
     // Optimization
