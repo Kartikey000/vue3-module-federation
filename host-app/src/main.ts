@@ -21,6 +21,7 @@ perfMonitor.markPlatformLoadEnd()
 
 // Initialize New Relic Browser Agent (Production only)
 if (import.meta.env.PROD) {
+  console.log(import.meta.env, 'env')
   const licenseKey = import.meta.env.NEWRELIC_LICENSE_KEY
   const applicationID = import.meta.env.NEWRELIC_APPLICATION_ID
   
