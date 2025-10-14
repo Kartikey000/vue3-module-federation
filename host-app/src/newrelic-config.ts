@@ -8,6 +8,7 @@ export interface NewRelicConfig {
   trustKey?: string
   agentID?: string
   region?: 'us' | 'eu' // default: us
+  appName?: string // Application name for BrowserPerformance events
 }
 
 export function initNewRelic(config: NewRelicConfig) {
@@ -25,6 +26,9 @@ export function initNewRelic(config: NewRelicConfig) {
 
     const options = {
       init: {
+        // Feature flags for BrowserPerformance events (marks and measures)
+        feature_flags: ['experimental_marks', 'experimental_measures'],
+        
         // Distributed Tracing: Track requests across your entire stack
         distributed_tracing: { 
           enabled: true,
@@ -114,7 +118,8 @@ export function initNewRelic(config: NewRelicConfig) {
         errorBeacon: beacon,
         licenseKey: config.licenseKey,
         applicationID: config.applicationID,
-        sa: 1
+        sa: 1,
+        ...(config.appName && { applicationName: config.appName })
       },
       loader_config: {
         accountID: config.accountId || '',

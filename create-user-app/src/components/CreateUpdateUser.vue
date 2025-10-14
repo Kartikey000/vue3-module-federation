@@ -99,6 +99,7 @@ import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { addPageAction, trackFormSubmission, trackUserInteraction, noticeError, trackComponentLoad } from '../utils/newrelic-helper'
+import { perfMonitor } from '../utils/performance-monitoring'
 
 interface Props {
   userId?: string | number
@@ -166,6 +167,9 @@ const resetForm = () => {
 // Define loadUser before it's used in watch
 const loadUser = async (id: string | number) => {
   try {
+    // Mark data load start
+    perfMonitor.markDataLoadStart('loadUser')
+    
     // Fetch user from Vuex store
     const numericId = typeof id === 'string' ? parseInt(id) : id
     
@@ -183,6 +187,9 @@ const loadUser = async (id: string | number) => {
       await store.dispatch('fetchUserById', numericId)
       user = store.getters.currentUser
     }
+    
+    // Mark data load end
+    perfMonitor.markDataLoadEnd('loadUser')
     
     // Populate form with user data
     if (user) {
@@ -252,8 +259,10 @@ const handleSubmit = async () => {
   }
 
   successMessage.value = ''
-  const startTime = performance.now()
   const formType = isEditMode.value ? 'update' : 'create'
+  
+  // Mark interaction start
+  perfMonitor.markInteractionStart(`${formType}User`)
 
   try {
     if (isEditMode.value && props.userId) {
@@ -284,9 +293,11 @@ const handleSubmit = async () => {
       successMessage.value = 'User created successfully!'
     }
 
+    // Mark interaction end
+    perfMonitor.markInteractionEnd(`${formType}User`)
+    
     // Track successful form submission
-    const duration = performance.now() - startTime
-    trackFormSubmission(formType, true, Math.round(duration))
+    trackFormSubmission(formType, true, 0)
 
     setTimeout(() => {
       successMessage.value = ''
@@ -303,9 +314,11 @@ const handleSubmit = async () => {
     }, 1500)
 
   } catch (error) {
+    // Mark interaction end (even on failure)
+    perfMonitor.markInteractionEnd(`${formType}User`)
+    
     // Track failed form submission
-    const duration = performance.now() - startTime
-    trackFormSubmission(formType, false, Math.round(duration), (error as Error).message)
+    trackFormSubmission(formType, false, 0, (error as Error).message)
     noticeError(error as Error, {
       action: 'formSubmit',
       formType,
@@ -330,16 +343,19 @@ const handleCancel = () => {
 }
 
 onMounted(() => {
-  const componentLoadStart = performance.now()
+  // Mark component load start
+  perfMonitor.markComponentLoadStart('CreateUpdateUser')
   
   if (props.userId) {
     isEditMode.value = true
     loadUser(props.userId)
   }
   
-  // Track component load
-  const componentLoadTime = performance.now() - componentLoadStart
-  trackComponentLoad('CreateUpdateUser', Math.round(componentLoadTime))
+  // Mark component load end
+  perfMonitor.markComponentLoadEnd('CreateUpdateUser')
+  
+  // Track component load for New Relic (legacy)
+  trackComponentLoad('CreateUpdateUser', performance.now())
   
   // Set custom attributes
   addPageAction('createUpdateUserViewed', {

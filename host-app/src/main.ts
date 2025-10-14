@@ -19,6 +19,11 @@ app.mount('#app')
 // Mark platform load end after mount
 perfMonitor.markPlatformLoadEnd()
 
+// Calculate Total Load Time after a short delay to ensure all components are loaded
+setTimeout(() => {
+  perfMonitor.calculateTotalLoadTime()
+}, 1000)
+
 // Initialize New Relic Browser Agent (Production only) - Hardcoded credentials
 if (import.meta.env.PROD) {
   // Hardcoded New Relic credentials (from your actual NR account)
@@ -36,9 +41,11 @@ if (import.meta.env.PROD) {
       applicationID: newRelicConfig.applicationID,
       accountId: newRelicConfig.accountId,
       agentID: newRelicConfig.agentID,
+      appName: 'host-app-vue-3' // Application name for BrowserPerformance events
     })
     console.log('[New Relic] ✅ Monitoring active with hardcoded credentials')
     console.log('[New Relic] Application ID:', newRelicConfig.applicationID)
+    console.log('[New Relic] BrowserPerformance events enabled for marks and measures')
   }).catch(error => {
     console.error('[New Relic] ❌ Failed to initialize:', error)
   })

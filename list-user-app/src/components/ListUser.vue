@@ -44,6 +44,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { addPageAction, trackComponentLoad, trackUserInteraction, noticeError } from '../utils/newrelic-helper'
+import { perfMonitor } from '../utils/performance-monitoring'
 
 // Accept store as prop for federated mode, fallback to useStore for standalone
 interface Props {
@@ -84,25 +85,27 @@ const editUser = (id: number) => {
 
 const deleteUser = async (id: number) => {
   if (confirm('Are you sure you want to delete this user?')) {
-    const startTime = performance.now()
+    // Mark interaction start
+    perfMonitor.markInteractionStart('deleteUser')
     
     try {
       await store.dispatch('deleteUser', id)
       
+      // Mark interaction end
+      perfMonitor.markInteractionEnd('deleteUser')
+      
       // Track successful deletion
-      const duration = performance.now() - startTime
       addPageAction('userDeleted', {
         userId: id,
-        success: true,
-        duration: Math.round(duration)
+        success: true
       })
     } catch (err) {
-      // Track failed deletion
-      const duration = performance.now() - startTime
+      // Mark interaction end (even on failure)
+      perfMonitor.markInteractionEnd('deleteUser')
+      
       noticeError(err as Error, {
         action: 'deleteUser',
-        userId: id,
-        duration: Math.round(duration)
+        userId: id
       })
       alert('Failed to delete user. Please try again.')
     }
@@ -113,18 +116,32 @@ const refreshUsers = () => {
   store.dispatch('fetchUsers')
 }
 
-onMounted(() => {
-  const componentLoadStart = performance.now()
+onMounted(async () => {
+  // Mark component load start
+  perfMonitor.markComponentLoadStart('ListUser')
   
   // Only fetch if users array is empty
   // This prevents resetting data when navigating back from edit
   if (users.value.length === 0) {
-    store.dispatch('fetchUsers')
+    // Mark data load start
+    perfMonitor.markDataLoadStart('fetchUsers')
+    
+    try {
+      await store.dispatch('fetchUsers')
+      
+      // Mark data load end
+      perfMonitor.markDataLoadEnd('fetchUsers')
+    } catch (err) {
+      perfMonitor.markDataLoadEnd('fetchUsers')
+      noticeError(err as Error, { operation: 'fetchUsers' })
+    }
   }
   
-  // Track component load time
-  const componentLoadTime = performance.now() - componentLoadStart
-  trackComponentLoad('ListUser', Math.round(componentLoadTime))
+  // Mark component load end
+  perfMonitor.markComponentLoadEnd('ListUser')
+  
+  // Track component load for New Relic (legacy)
+  trackComponentLoad('ListUser', performance.now())
   
   // Set custom attributes
   addPageAction('listUserViewed', {
