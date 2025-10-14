@@ -23,13 +23,13 @@ perfMonitor.markPlatformLoadEnd()
 // Only runs in PRODUCTION mode with proper credentials
 // Dynamic import ensures New Relic is tree-shaken out of development builds
 if (import.meta.env.PROD) {
-  if (import.meta.env.VITE_NEWRELIC_LICENSE_KEY && import.meta.env.VITE_NEWRELIC_APPLICATION_ID) {
+  if (import.meta.env.NEWRELIC_LICENSE_KEY && import.meta.env.NEWRELIC_APPLICATION_ID) {
     import('./newrelic-config').then(({ initNewRelic }) => {
       initNewRelic({
-        licenseKey: import.meta.env.VITE_NEWRELIC_LICENSE_KEY,
-        applicationID: import.meta.env.VITE_NEWRELIC_APPLICATION_ID,
-        accountId: import.meta.env.VITE_NEWRELIC_ACCOUNT_ID,
-        agentID: import.meta.env.VITE_NEWRELIC_AGENT_ID,
+        licenseKey: import.meta.env.NEWRELIC_LICENSE_KEY,
+        applicationID: import.meta.env.NEWRELIC_APPLICATION_ID,
+        accountId: import.meta.env.NEWRELIC_ACCOUNT_ID,
+        agentID: import.meta.env.NEWRELIC_AGENT_ID,
       })
       console.log('[New Relic] ✅ Monitoring active')
     }).catch(error => {
