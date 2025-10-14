@@ -1,4 +1,6 @@
 // newrelic-config.ts
+import { BrowserAgent } from '@newrelic/browser-agent/loaders/browser-agent'
+
 export interface NewRelicConfig {
   licenseKey: string
   applicationID: string
@@ -8,12 +10,8 @@ export interface NewRelicConfig {
   region?: 'us' | 'eu' // default: us
 }
 
-export async function initNewRelic(config: NewRelicConfig) {
+export function initNewRelic(config: NewRelicConfig) {
   try {
-    // Dynamic import ensures it's bundled correctly
-    // Using the specific loader path as per New Relic documentation
-    // @ts-expect-error - Dynamic import, module available at runtime
-    const { BrowserAgent } = await import('@newrelic/browser-agent/loaders/browser-agent')
 
     const beacon = config.region === 'eu' ? 'bam.eu01.nr-data.net' : 'bam.nr-data.net'
 

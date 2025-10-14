@@ -44,7 +44,7 @@
         ,
           "vuex": {
             name: "vuex",
-            version: "4.0.2",
+            version: "4.1.0",
             scope: ["default"],
             loaded: false,
             from: "createUserApp",
@@ -64,7 +64,7 @@
             },
             shareConfig: {
               singleton: true,
-              requiredVersion: "^4.0.2"
+              requiredVersion: "^4.1.0"
             }
           }
         

@@ -1,18 +1,5 @@
 import './assets/main.css'
 
-if (import.meta.env.NEWRELIC_LICENSE_KEY && import.meta.env.NEWRELIC_APPLICATION_ID) {
-    import('./newrelic-config').then(({ initNewRelic }) => {
-      initNewRelic({
-        licenseKey: import.meta.env.NEWRELIC_LICENSE_KEY,
-        applicationID: import.meta.env.NEWRELIC_APPLICATION_ID,
-        accountId: import.meta.env.NEWRELIC_ACCOUNT_ID,
-        agentID: import.meta.env.NEWRELIC_AGENT_ID,
-      })
-    })
-  } else {
-    console.log('[New Relic] Skipped - License key or Application ID not configured')
-  }
-
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -31,3 +18,26 @@ app.mount('#app')
 
 // Mark platform load end after mount
 perfMonitor.markPlatformLoadEnd()
+
+// Initialize New Relic Browser Agent
+// Only runs in PRODUCTION mode with proper credentials
+// Dynamic import ensures New Relic is tree-shaken out of development builds
+if (import.meta.env.PROD) {
+  if (import.meta.env.VITE_NEWRELIC_LICENSE_KEY && import.meta.env.VITE_NEWRELIC_APPLICATION_ID) {
+    import('./newrelic-config').then(({ initNewRelic }) => {
+      initNewRelic({
+        licenseKey: import.meta.env.VITE_NEWRELIC_LICENSE_KEY,
+        applicationID: import.meta.env.VITE_NEWRELIC_APPLICATION_ID,
+        accountId: import.meta.env.VITE_NEWRELIC_ACCOUNT_ID,
+        agentID: import.meta.env.VITE_NEWRELIC_AGENT_ID,
+      })
+      console.log('[New Relic] ✅ Monitoring active')
+    }).catch(error => {
+      console.error('[New Relic] ❌ Failed to initialize:', error)
+    })
+  } else {
+    console.warn('[New Relic] ⚠️ Credentials not configured')
+  }
+} else {
+  console.log('[New Relic] ℹ️ Disabled in development mode')
+}
