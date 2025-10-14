@@ -36,15 +36,19 @@ const router = createRouter({
 // This helps New Relic monitor client-side route changes in the single-page application
 router.afterEach((to, from) => {
   if (typeof window !== 'undefined' && (window as any).newrelic) {
-    // Set the page view name to the new route path
-    (window as any).newrelic.setPageViewName(to.fullPath)
+    const nr = (window as any).newrelic
     
-    // Optionally add custom attributes for better tracking
-    if ((window as any).newrelic.setCustomAttribute) {
-      (window as any).newrelic.setCustomAttribute('routeName', to.name as string || 'unknown')
-      (window as any).newrelic.setCustomAttribute('routePath', to.path)
+    // Set the page view name to the new route path
+    if (typeof nr.setPageViewName === 'function') {
+      nr.setPageViewName(to.fullPath)
+    }
+    
+    // Add custom attributes for better tracking (each call is independent)
+    if (typeof nr.setCustomAttribute === 'function') {
+      nr.setCustomAttribute('routeName', to.name as string || 'unknown')
+      nr.setCustomAttribute('routePath', to.path)
       if (from.path) {
-        (window as any).newrelic.setCustomAttribute('previousRoute', from.path)
+        nr.setCustomAttribute('previousRoute', from.path)
       }
     }
     

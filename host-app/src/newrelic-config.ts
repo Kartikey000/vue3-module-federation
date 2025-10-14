@@ -55,8 +55,26 @@ export function initNewRelic(config: NewRelicConfig) {
           harvestTimeSeconds: 10
         },
         
+        // Logging: Track console logs
+        logging: {
+          enabled: true,
+          harvestTimeSeconds: 10,
+          level: 'info' // Capture info, warn, and error logs
+        },
+        
         // Metrics for core web vitals and performance
         metrics: {
+          enabled: true
+        },
+        
+        // Generic Events: Parent feature for page actions, user actions, and performance events
+        generic_events: {
+          enabled: true,
+          harvestTimeSeconds: 30
+        },
+        
+        // User Actions: Track automatic user interactions (clicks, keypress, etc)
+        user_actions: {
           enabled: true
         },
         
@@ -78,7 +96,7 @@ export function initNewRelic(config: NewRelicConfig) {
           enabled: true
         },
         
-        // Page View Event: Track page views and navigation
+        // Page View Event: Track page views and navigation (cannot be disabled)
         page_view_event: {
           enabled: true
         },
