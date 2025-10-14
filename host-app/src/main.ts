@@ -21,16 +21,16 @@ perfMonitor.markPlatformLoadEnd()
 
 // Initialize New Relic Browser Agent (Production only)
 if (import.meta.env.PROD) {
-  const licenseKey = import.meta.env.VITE_NEWRELIC_LICENSE_KEY
-  const applicationID = import.meta.env.VITE_NEWRELIC_APPLICATION_ID
+  const licenseKey = import.meta.env.NEWRELIC_LICENSE_KEY
+  const applicationID = import.meta.env.NEWRELIC_APPLICATION_ID
   
   if (licenseKey && applicationID) {
     import('./newrelic-config').then(({ initNewRelic }) => {
       initNewRelic({
         licenseKey: licenseKey,
         applicationID: applicationID,
-        accountId: import.meta.env.VITE_NEWRELIC_ACCOUNT_ID,
-        agentID: import.meta.env.VITE_NEWRELIC_AGENT_ID,
+        accountId: import.meta.env.NEWRELIC_ACCOUNT_ID,
+        agentID: import.meta.env.NEWRELIC_AGENT_ID,
       })
       console.log('[New Relic] ✅ Monitoring active')
     }).catch(error => {
