@@ -53,28 +53,70 @@ const loadRemoteComponent = async () => {
   loading.value = true
   error.value = null
   
-  // Mark start of remote component asset load
-  perfMonitor.markRemoteAssetLoadStart('createUserApp')
-  perfMonitor.markComponentLoadStart('CreateUpdateUser')
+  // Mark start of remote component asset load with custom attributes
+  perfMonitor.markRemoteAssetLoadStart('createUserApp', {
+    remoteUrl: import.meta.env.PROD 
+      ? 'https://vue3-module-federation-create-user.vercel.app' 
+      : 'http://localhost:5002',
+    loadType: 'dynamic-import',
+    componentName: 'CreateUpdateUser',
+    mode: isEditMode.value ? 'edit' : 'create',
+    userId: userId.value || null,
+    route: window.location.pathname
+  })
+  
+  perfMonitor.markComponentLoadStart('CreateUpdateUser', {
+    componentType: 'remote',
+    remoteApp: 'create-user-app',
+    isLazy: true,
+    loadMethod: 'module-federation',
+    mode: isEditMode.value ? 'edit' : 'create',
+    userId: userId.value || null
+  })
   
   try {
     // Import the remote component using Module Federation
     const module = await import('createUserApp/CreateUpdateUser')
     RemoteCreateUpdateUser.value = module.default || module
     
-    // Mark end of asset load
-    perfMonitor.markRemoteAssetLoadEnd('createUserApp')
+    // Mark end of asset load with success metadata
+    perfMonitor.markRemoteAssetLoadEnd('createUserApp', {
+      success: true,
+      hasDefault: !!module.default,
+      loadComplete: true,
+      mode: isEditMode.value ? 'edit' : 'create'
+    })
     
     loading.value = false
     
-    // Mark end of component load (after render)
+    // Mark end of component load (after render) with final metadata
     setTimeout(() => {
-      perfMonitor.markComponentLoadEnd('CreateUpdateUser')
+      perfMonitor.markComponentLoadEnd('CreateUpdateUser', {
+        success: true,
+        rendered: true,
+        remoteApp: 'create-user-app',
+        mode: isEditMode.value ? 'edit' : 'create',
+        userId: userId.value || null
+      })
     }, 0)
   } catch (err) {
     console.error('Failed to load remote CreateUpdateUser component:', err)
     error.value = 'Failed to load Create/Update User component. Make sure the create-user-app is running on port 5002.'
     loading.value = false
+    
+    // Mark failure with error metadata
+    perfMonitor.markRemoteAssetLoadEnd('createUserApp', {
+      success: false,
+      error: (err as Error).message,
+      mode: isEditMode.value ? 'edit' : 'create'
+    })
+    
+    perfMonitor.markComponentLoadEnd('CreateUpdateUser', {
+      success: false,
+      error: (err as Error).message,
+      remoteApp: 'create-user-app',
+      mode: isEditMode.value ? 'edit' : 'create'
+    })
   }
 }
 

@@ -34,7 +34,29 @@
 </template>
 
 <script setup lang="ts">
-// About component logic
+import { onMounted } from 'vue'
+import { perfMonitor } from '../utils/performance-monitoring'
+
+onMounted(() => {
+  // Mark component load start with custom attributes
+  perfMonitor.markComponentLoadStart('AboutView', {
+    componentType: 'page',
+    isRemote: false,
+    pageType: 'information',
+    hasSections: true,
+    sectionCount: 3,
+    route: '/about'
+  })
+  
+  // Mark component load end with final metadata
+  perfMonitor.markComponentLoadEnd('AboutView', {
+    pageType: 'information',
+    renderComplete: true,
+    sectionsRendered: 3,
+    contentType: 'static',
+    hasFeatureList: true
+  })
+})
 </script>
 
 <style scoped>

@@ -6,8 +6,14 @@ import router from './router'
 import store from './store'
 import { perfMonitor } from './utils/performance-monitoring'
 
-// Mark platform load start
-perfMonitor.markPlatformLoadStart()
+// Mark platform load start with custom attributes
+perfMonitor.markPlatformLoadStart({
+  environment: import.meta.env.MODE,
+  appType: 'micro-frontend-host',
+  hasRouter: true,
+  hasStore: true,
+  initialRoute: window.location.pathname
+})
 
 const app = createApp(App)
 
@@ -16,12 +22,24 @@ app.use(store)
 
 app.mount('#app')
 
-// Mark platform load end after mount
-perfMonitor.markPlatformLoadEnd()
+// Mark platform load end after mount with custom attributes
+perfMonitor.markPlatformLoadEnd({
+  environment: import.meta.env.MODE,
+  mountComplete: true,
+  pluginsLoaded: ['router', 'vuex'],
+  currentRoute: router.currentRoute.value.path
+})
 
 // Calculate Total Load Time after a short delay to ensure all components are loaded
 setTimeout(() => {
-  perfMonitor.calculateTotalLoadTime()
+  perfMonitor.calculateTotalLoadTime({
+    environment: import.meta.env.MODE,
+    pageType: 'host-application',
+    hasRemotes: true,
+    remoteApps: ['list-user-app', 'create-user-app'],
+    currentRoute: router.currentRoute.value.path,
+    allComponentsLoaded: true
+  })
 }, 1000)
 
 // Initialize New Relic Browser Agent (Production only) - Hardcoded credentials

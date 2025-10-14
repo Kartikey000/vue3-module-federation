@@ -26,7 +26,29 @@
 </template>
 
 <script setup lang="ts">
-// Home component logic
+import { onMounted } from 'vue'
+import { perfMonitor } from '../utils/performance-monitoring'
+
+onMounted(() => {
+  // Mark component load start with custom attributes
+  perfMonitor.markComponentLoadStart('HomeView', {
+    componentType: 'page',
+    isRemote: false,
+    pageType: 'landing',
+    hasNavigation: true,
+    cardCount: 3,
+    route: '/'
+  })
+  
+  // Mark component load end with final metadata
+  perfMonitor.markComponentLoadEnd('HomeView', {
+    pageType: 'landing',
+    renderComplete: true,
+    cardsRendered: 3,
+    hasLinks: true,
+    navigationReady: true
+  })
+})
 </script>
 
 <style scoped>

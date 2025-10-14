@@ -42,28 +42,61 @@ const loadRemoteComponent = async () => {
   loading.value = true
   error.value = null
   
-  // Mark start of remote component asset load
-  perfMonitor.markRemoteAssetLoadStart('listUserApp')
-  perfMonitor.markComponentLoadStart('ListUser')
+  // Mark start of remote component asset load with custom attributes
+  perfMonitor.markRemoteAssetLoadStart('listUserApp', {
+    remoteUrl: import.meta.env.PROD 
+      ? 'https://vue3-module-federation-list-user-ap.vercel.app' 
+      : 'http://localhost:5001',
+    loadType: 'dynamic-import',
+    componentName: 'ListUser',
+    route: window.location.pathname
+  })
+  
+  perfMonitor.markComponentLoadStart('ListUser', {
+    componentType: 'remote',
+    remoteApp: 'list-user-app',
+    isLazy: true,
+    loadMethod: 'module-federation'
+  })
   
   try {
     // Import the remote component using Module Federation
     const module = await import('listUserApp/ListUser')
     RemoteListUser.value = module.default || module
     
-    // Mark end of asset load
-    perfMonitor.markRemoteAssetLoadEnd('listUserApp')
+    // Mark end of asset load with success metadata
+    perfMonitor.markRemoteAssetLoadEnd('listUserApp', {
+      success: true,
+      hasDefault: !!module.default,
+      loadComplete: true
+    })
     
     loading.value = false
     
-    // Mark end of component load (after render)
+    // Mark end of component load (after render) with final metadata
     setTimeout(() => {
-      perfMonitor.markComponentLoadEnd('ListUser')
+      perfMonitor.markComponentLoadEnd('ListUser', {
+        success: true,
+        rendered: true,
+        remoteApp: 'list-user-app'
+      })
     }, 0)
   } catch (err) {
     console.error('Failed to load remote ListUser component:', err)
     error.value = 'Failed to load List User component. Make sure the list-user-app is running on port 5001.'
     loading.value = false
+    
+    // Mark failure with error metadata
+    perfMonitor.markRemoteAssetLoadEnd('listUserApp', {
+      success: false,
+      error: (err as Error).message
+    })
+    
+    perfMonitor.markComponentLoadEnd('ListUser', {
+      success: false,
+      error: (err as Error).message,
+      remoteApp: 'list-user-app'
+    })
   }
 }
 

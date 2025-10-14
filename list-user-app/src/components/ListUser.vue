@@ -85,14 +85,22 @@ const editUser = (id: number) => {
 
 const deleteUser = async (id: number) => {
   if (confirm('Are you sure you want to delete this user?')) {
-    // Mark interaction start
-    perfMonitor.markInteractionStart('deleteUser')
+    // Mark interaction start with custom attributes
+    perfMonitor.markInteractionStart('deleteUser', {
+      userId: id,
+      confirmationShown: true,
+      userCount: users.value.length
+    })
     
     try {
       await store.dispatch('deleteUser', id)
       
-      // Mark interaction end
-      perfMonitor.markInteractionEnd('deleteUser')
+      // Mark interaction end with success metadata
+      perfMonitor.markInteractionEnd('deleteUser', {
+        userId: id,
+        success: true,
+        remainingUsers: users.value.length - 1
+      })
       
       // Track successful deletion
       addPageAction('userDeleted', {
@@ -100,8 +108,12 @@ const deleteUser = async (id: number) => {
         success: true
       })
     } catch (err) {
-      // Mark interaction end (even on failure)
-      perfMonitor.markInteractionEnd('deleteUser')
+      // Mark interaction end (even on failure) with error metadata
+      perfMonitor.markInteractionEnd('deleteUser', {
+        userId: id,
+        success: false,
+        error: (err as Error).message
+      })
       
       noticeError(err as Error, {
         action: 'deleteUser',
@@ -117,28 +129,53 @@ const refreshUsers = () => {
 }
 
 onMounted(async () => {
-  // Mark component load start
-  perfMonitor.markComponentLoadStart('ListUser')
+  // Mark component load start with custom attributes
+  perfMonitor.markComponentLoadStart('ListUser', {
+    componentType: 'data-table',
+    isRemote: true,
+    isFederated: !!props.store, // true if loaded via Module Federation
+    route: window.location.pathname
+  })
   
   // Only fetch if users array is empty
   // This prevents resetting data when navigating back from edit
   if (users.value.length === 0) {
-    // Mark data load start
-    perfMonitor.markDataLoadStart('fetchUsers')
+    // Mark data load start with custom attributes
+    perfMonitor.markDataLoadStart('fetchUsers', {
+      endpoint: '/api/users',
+      method: 'GET',
+      cacheCheck: true,
+      isInitialLoad: true
+    })
     
     try {
       await store.dispatch('fetchUsers')
       
-      // Mark data load end
-      perfMonitor.markDataLoadEnd('fetchUsers')
+      // Mark data load end with result metadata
+      perfMonitor.markDataLoadEnd('fetchUsers', {
+        recordCount: users.value.length,
+        success: true,
+        cacheHit: false,
+        hasData: users.value.length > 0
+      })
     } catch (err) {
-      perfMonitor.markDataLoadEnd('fetchUsers')
+      // Mark data load end with error metadata
+      perfMonitor.markDataLoadEnd('fetchUsers', {
+        recordCount: 0,
+        success: false,
+        error: (err as Error).message
+      })
       noticeError(err as Error, { operation: 'fetchUsers' })
     }
   }
   
-  // Mark component load end
-  perfMonitor.markComponentLoadEnd('ListUser')
+  // Mark component load end with final metadata
+  perfMonitor.markComponentLoadEnd('ListUser', {
+    userCount: users.value.length,
+    hasUsers: users.value.length > 0,
+    dataLoaded: users.value.length > 0,
+    renderComplete: true
+  })
   
   // Track component load for New Relic (legacy)
   trackComponentLoad('ListUser', performance.now())

@@ -167,8 +167,12 @@ const resetForm = () => {
 // Define loadUser before it's used in watch
 const loadUser = async (id: string | number) => {
   try {
-    // Mark data load start
-    perfMonitor.markDataLoadStart('loadUser')
+    // Mark data load start with custom attributes
+    perfMonitor.markDataLoadStart('loadUser', {
+      userId: id,
+      operation: 'fetchUserForEdit',
+      endpoint: '/api/users/:id'
+    })
     
     // Fetch user from Vuex store
     const numericId = typeof id === 'string' ? parseInt(id) : id
@@ -188,8 +192,13 @@ const loadUser = async (id: string | number) => {
       user = store.getters.currentUser
     }
     
-    // Mark data load end
-    perfMonitor.markDataLoadEnd('loadUser')
+    // Mark data load end with result metadata
+    perfMonitor.markDataLoadEnd('loadUser', {
+      userId: id,
+      success: !!user,
+      userFound: !!user,
+      source: user ? 'store' : 'api'
+    })
     
     // Populate form with user data
     if (user) {
@@ -203,7 +212,14 @@ const loadUser = async (id: string | number) => {
       alert('User not found')
     }
   } catch (err) {
+    // Mark data load end with error
+    perfMonitor.markDataLoadEnd('loadUser', {
+      userId: id,
+      success: false,
+      error: (err as Error).message
+    })
     console.error('Error loading user:', err)
+    noticeError(err as Error, { operation: 'loadUser', userId: id })
     alert('Failed to load user data')
   }
 }
@@ -259,10 +275,18 @@ const handleSubmit = async () => {
   }
 
   successMessage.value = ''
+  const startTime = performance.now()
   const formType = isEditMode.value ? 'update' : 'create'
   
-  // Mark interaction start
-  perfMonitor.markInteractionStart(`${formType}User`)
+  // Mark interaction start with custom attributes
+  perfMonitor.markInteractionStart(`${formType}User`, {
+    formType,
+    userId: props.userId || null,
+    hasPhone: !!formData.phone,
+    hasDepartment: !!formData.department,
+    userRole: formData.role,
+    isActive: formData.active
+  })
 
   try {
     if (isEditMode.value && props.userId) {
@@ -293,8 +317,21 @@ const handleSubmit = async () => {
       successMessage.value = 'User created successfully!'
     }
 
-    // Mark interaction end
-    perfMonitor.markInteractionEnd(`${formType}User`)
+    const duration = performance.now() - startTime
+    
+    // Mark interaction end with success metadata
+    perfMonitor.markInteractionEnd(`${formType}User`, {
+      formType,
+      userId: props.userId || null,
+      success: true,
+      duration: Math.round(duration),
+      userRole: formData.role,
+      fieldsCompleted: [
+        'name', 'email', 'role',
+        formData.phone && 'phone',
+        formData.department && 'department'
+      ].filter(Boolean).length
+    })
     
     // Track successful form submission
     trackFormSubmission(formType, true, 0)
@@ -314,8 +351,17 @@ const handleSubmit = async () => {
     }, 1500)
 
   } catch (error) {
-    // Mark interaction end (even on failure)
-    perfMonitor.markInteractionEnd(`${formType}User`)
+    const duration = performance.now() - startTime
+    
+    // Mark interaction end (even on failure) with error metadata
+    perfMonitor.markInteractionEnd(`${formType}User`, {
+      formType,
+      userId: props.userId || null,
+      success: false,
+      duration: Math.round(duration),
+      error: (error as Error).message,
+      userRole: formData.role
+    })
     
     // Track failed form submission
     trackFormSubmission(formType, false, 0, (error as Error).message)
@@ -343,16 +389,29 @@ const handleCancel = () => {
 }
 
 onMounted(() => {
-  // Mark component load start
-  perfMonitor.markComponentLoadStart('CreateUpdateUser')
+  // Mark component load start with custom attributes
+  perfMonitor.markComponentLoadStart('CreateUpdateUser', {
+    componentType: 'form',
+    isRemote: true,
+    isFederated: !!props.store, // true if loaded via Module Federation
+    mode: props.userId ? 'edit' : 'create',
+    userId: props.userId || null,
+    route: window.location.pathname
+  })
   
   if (props.userId) {
     isEditMode.value = true
     loadUser(props.userId)
   }
   
-  // Mark component load end
-  perfMonitor.markComponentLoadEnd('CreateUpdateUser')
+  // Mark component load end with final metadata
+  perfMonitor.markComponentLoadEnd('CreateUpdateUser', {
+    mode: isEditMode.value ? 'edit' : 'create',
+    userId: props.userId || null,
+    dataLoaded: isEditMode.value,
+    formReady: true,
+    renderComplete: true
+  })
   
   // Track component load for New Relic (legacy)
   trackComponentLoad('CreateUpdateUser', performance.now())
