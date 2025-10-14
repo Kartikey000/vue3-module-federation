@@ -12,8 +12,16 @@ export interface NewRelicConfig {
 
 export function initNewRelic(config: NewRelicConfig) {
   try {
+    // Validate required configuration
+    if (!config.licenseKey || !config.applicationID) {
+      console.error('[New Relic] Missing required configuration')
+      return
+    }
 
     const beacon = config.region === 'eu' ? 'bam.eu01.nr-data.net' : 'bam.nr-data.net'
+    
+    // Get the current origin for CORS configuration
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : ''
 
     const options = {
       init: {
@@ -22,7 +30,7 @@ export function initNewRelic(config: NewRelicConfig) {
           enabled: true,
           cors_use_newrelic_header: true,
           cors_use_tracecontext_headers: true,
-          allowed_origins: []
+          allowed_origins: [currentOrigin]
         },
         
         // Privacy settings
@@ -64,17 +72,9 @@ export function initNewRelic(config: NewRelicConfig) {
           harvestTimeSeconds: 30
         },
         
-        // Session Replay: Visual replay of user sessions (can be disabled for privacy)
+        // Session Replay: Disabled to prevent harvest errors
         session_replay: { 
-          enabled: true,
-          block_selector: '',
-          mask_text_selector: '*',
-          sampling_rate: 10.0,
-          error_sampling_rate: 100.0,
-          mask_all_inputs: true,
-          collect_fonts: true,
-          inline_images: false,
-          inline_stylesheet: true
+          enabled: false
         },
         
         // Session Trace: Detailed interaction traces
@@ -101,7 +101,7 @@ export function initNewRelic(config: NewRelicConfig) {
         errorBeacon: beacon,
         licenseKey: config.licenseKey,
         applicationID: config.applicationID,
-        sa: 1,
+        sa: 1
       },
       loader_config: {
         accountID: config.accountId || '',
@@ -116,6 +116,12 @@ export function initNewRelic(config: NewRelicConfig) {
     new BrowserAgent(options)
 
     console.log('[New Relic] Browser agent initialized ✅')
+    console.log('[New Relic] Config:', {
+      applicationID: config.applicationID,
+      accountId: config.accountId,
+      beacon,
+      origin: currentOrigin
+    })
   } catch (error) {
     console.error('[New Relic] Failed to initialize:', error)
   }
