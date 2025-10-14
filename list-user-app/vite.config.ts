@@ -10,10 +10,18 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode`
   const env = loadEnv(mode, process.cwd(), '')
   
+  // Helper function to normalize URL (remove trailing slash)
+  const normalizeUrl = (url: string) => url.replace(/\/$/, '')
+  
   // Get host URL from environment variables with fallback
-  const hostAppUrl = env.HOST_APP_URL || 'http://localhost:5000'
+  const hostAppUrl = normalizeUrl(env.HOST_APP_URL || 'http://localhost:5000')
+  
+  // Get the app's own URL for production builds
+  const appUrl = normalizeUrl(env.APP_URL || '')
 
   return {
+    // Set base URL for production - critical for Module Federation
+    base: mode === 'production' && appUrl ? appUrl : '/',
     plugins: [
       vue(),
       vueDevTools(),
