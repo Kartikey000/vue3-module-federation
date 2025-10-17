@@ -275,6 +275,9 @@ export class PerformanceMonitor {
       const measure = performance.getEntriesByName(measureName)[0]
       if (measure && measure.duration !== undefined) {
         console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
+        
+        // Send to New Relic Browser Agent
+        this.sendToNewRelic(measureName, measure.duration, detail)
       }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
@@ -305,13 +308,16 @@ export class PerformanceMonitor {
         detail
       })
       
-      const measure = performance.getEntriesByName(measureName)[0]
-      if (measure && measure.duration !== undefined) {
-        console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
-        
-        // Log summary of all measures
-        this.logPerformanceSummary()
-      }
+          const measure = performance.getEntriesByName(measureName)[0]
+          if (measure && measure.duration !== undefined) {
+            console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
+            
+            // Send to New Relic Browser Agent
+            this.sendToNewRelic(measureName, measure.duration, detail)
+            
+            // Log summary of all measures
+            this.logPerformanceSummary()
+          }
     } catch (error) {
       console.warn('[Performance] Could not calculate TLT:', error)
     }

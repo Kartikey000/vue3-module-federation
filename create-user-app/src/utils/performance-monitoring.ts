@@ -69,6 +69,9 @@ export class PerformanceMonitor {
       const measure = performance.getEntriesByName(measureName)[0]
       if (measure && measure.duration !== undefined) {
         console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
+        
+        // Send to New Relic Browser Agent
+        this.sendToNewRelic(measureName, measure.duration, detail)
       }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
@@ -119,6 +122,9 @@ export class PerformanceMonitor {
       const measure = performance.getEntriesByName(measureName)[0]
       if (measure && measure.duration !== undefined) {
         console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
+        
+        // Send to New Relic Browser Agent
+        this.sendToNewRelic(measureName, measure.duration, detail)
       }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
@@ -165,6 +171,9 @@ export class PerformanceMonitor {
       const measure = performance.getEntriesByName(measureName)[0]
       if (measure && measure.duration !== undefined) {
         console.log(`[Performance] ${measureName}: ${measure.duration.toFixed(2)}ms`, detail)
+        
+        // Send to New Relic Browser Agent
+        this.sendToNewRelic(measureName, measure.duration, detail)
       }
     } catch (error) {
       console.warn(`[Performance] Could not measure ${measureName}:`, error)
@@ -177,6 +186,42 @@ export class PerformanceMonitor {
   getAllMeasures(): PerformanceEntry[] {
     return performance.getEntriesByType('measure')
       .filter(entry => entry.name.startsWith(`${this.appName}:`))
+  }
+
+  /**
+   * Send performance data to New Relic Browser Agent
+   */
+  private sendToNewRelic(measureName: string, duration: number, metadata: PerformanceMetadata): void {
+    try {
+      // Check if New Relic is available
+      if (typeof window !== 'undefined' && (window as any).newrelic) {
+        const nr = (window as any).newrelic
+        
+        // Send as custom event with performance data
+        if (typeof nr.addPageAction === 'function') {
+          nr.addPageAction('PerformanceMeasure', {
+            measureName,
+            duration: Math.round(duration),
+            measureType: metadata.measureType || 'unknown',
+            team: metadata.team || this.teamName,
+            version: metadata.version || this.version,
+            ...metadata
+          })
+        }
+        
+        // Also send as custom attribute for aggregation
+        if (typeof nr.setCustomAttribute === 'function') {
+          nr.setCustomAttribute(`perf_${measureName.replace(/:/g, '_')}`, Math.round(duration))
+          nr.setCustomAttribute(`perf_${metadata.measureType || 'unknown'}`, Math.round(duration))
+        }
+        
+        console.log(`[New Relic] ✅ Sent performance data: ${measureName} (${duration.toFixed(2)}ms)`)
+      } else {
+        console.log(`[New Relic] ⚠️ Agent not available, performance data not sent: ${measureName}`)
+      }
+    } catch (error) {
+      console.warn(`[New Relic] ❌ Failed to send performance data for ${measureName}:`, error)
+    }
   }
 
   /**
